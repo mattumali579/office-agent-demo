@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AI Office Agent — Live Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231a56db'/%3E%3Cpath d='M16 22h32v20H30l-8 8v-8h-6z' fill='%23fff'/%3E%3C/svg%3E">
+<meta name="description" content="A missed after-hours call turns into a booked job in four minutes, with nobody answering the phone.">
+<style>
+  :root {
+    --page:    #f6f6f4;
+    --surface: #ffffff;
+    --ink:     #101014;
+    --ink-2:   #585d69;
+    --ink-3:   #8d929e;
+    --line:    #e6e6e2;
+    --line-2:  #f0f0ed;
+    --accent:  #1a56db;
+    --radius: 14px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--page); color: var(--ink); font-family: var(--font);
+    font-size: 17px; line-height: 1.55; padding: 56px 24px 72px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; }
+
+  /* ---------- opening: the story, stated once ---------- */
+  .eyebrow { font-size: 14px; color: var(--ink-3); margin-bottom: 18px; }
+  .eyebrow b { color: var(--ink-2); font-weight: 600; }
+  h1 { font-size: 38px; line-height: 1.18; letter-spacing: -.021em; font-weight: 650; max-width: 20ch; }
+  .lede { margin-top: 16px; font-size: 18.5px; color: var(--ink-2); max-width: 56ch; }
+  .lede b { color: var(--ink); font-weight: 600; }
+
+  .actions { display: flex; align-items: center; gap: 18px; margin: 30px 0 40px; flex-wrap: wrap; }
+  .btn {
+    font-family: var(--font); font-size: 16px; font-weight: 600; cursor: pointer;
+    background: var(--accent); color: #fff; border: 0; border-radius: 10px;
+    padding: 0 26px; height: 52px; line-height: 52px;
+  }
+  .btn:hover { background: #1449bd; }
+  .linkbtn {
+    background: none; border: 0; font-family: var(--font); font-size: 15.5px; color: var(--ink-2);
+    cursor: pointer; padding: 8px 0; text-align: left;
+  }
+  .linkbtn:hover { color: var(--ink); }
+  .linkbtn:disabled { color: var(--ink-3); cursor: default; }
+
+  /* ---------- the story itself ---------- */
+  .stage {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    display: grid; grid-template-columns: 316px 1fr; overflow: hidden;
+  }
+  .stage .left { padding: 30px; border-right: 1px solid var(--line-2); background: #fbfbfa;
+                 display: flex; align-items: center; justify-content: center; }
+  .stage .right { padding: 34px 34px 30px; }
+
+  /* phone — the surface the customer actually touches */
+  .phone { width: 256px; margin: 0 auto; border-radius: 26px; background: #fff;
+           border: 1px solid var(--line); overflow: hidden; }
+  .phone-top { padding: 13px 14px 11px; border-bottom: 1px solid var(--line-2); text-align: center; }
+  .phone-top .who { font-size: 13.5px; font-weight: 600; letter-spacing: -.01em; }
+  .phone-top .sub { font-size: 11.5px; color: var(--ink-3); margin-top: 1px; }
+  .thread { min-height: 104px; max-height: 340px; overflow-y: auto; padding: 14px 12px; display: flex; flex-direction: column; gap: 7px; }
+  .thread::-webkit-scrollbar { width: 0; }
+  .thread { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px);
+                    mask-image: linear-gradient(to bottom, transparent 0, #000 18px); }
+  .when { text-align: center; font-size: 11px; color: var(--ink-3); margin-bottom: 3px; }
+  .msg { max-width: 84%; padding: 9px 13px; font-size: 13.5px; line-height: 1.42; border-radius: 17px; animation: rise .26s ease; }
+  .msg.them { background: #ececf0; color: var(--ink); align-self: flex-start; border-bottom-left-radius: 5px; }
+  .msg.agent { background: var(--accent); color: #fff; align-self: flex-end; border-bottom-right-radius: 5px; }
+  .msg .tap { display: block; margin-top: 8px; background: rgba(255,255,255,.19); border-radius: 9px;
+              padding: 9px 11px; font-weight: 600; text-align: center; cursor: pointer; }
+  .msg .tap:hover { background: rgba(255,255,255,.29); }
+  .dots { align-self: flex-end; background: #ececf0; border-radius: 17px; border-bottom-right-radius: 5px;
+          padding: 12px 14px; display: flex; gap: 4px; }
+  .dots i { width: 6px; height: 6px; border-radius: 50%; background: #a6a9b2; animation: blink 1.15s infinite; }
+  .dots i:nth-child(2) { animation-delay: .17s; } .dots i:nth-child(3) { animation-delay: .34s; }
+  @keyframes blink { 0%, 60%, 100% { opacity: .3 } 30% { opacity: 1 } }
+  @keyframes rise { from { opacity: 0; transform: translateY(5px) } to { opacity: 1; transform: none } }
+
+  /* booking sheet, inside the phone where it belongs */
+  .sheet { border-top: 1px solid var(--line-2); padding: 13px 12px 14px; display: none; }
+  .sheet.on { display: block; animation: rise .3s ease; }
+  .sheet .h { font-size: 12.5px; font-weight: 600; margin-bottom: 9px; }
+  .slots { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .slot { border: 1px solid var(--line); border-radius: 9px; padding: 10px 6px; text-align: center;
+          font-size: 12.5px; font-family: var(--font); cursor: pointer; background: #fff; color: var(--ink); }
+  .slot:hover { border-color: var(--accent); color: var(--accent); }
+  .slot.taken { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+
+  /* the trail — what the owner sees happen. no dashboard. */
+  .right h2 { font-size: 13px; font-weight: 600; color: var(--ink-3); margin-bottom: 22px; }
+  .trail { list-style: none; position: relative; }
+  .trail:before { content: ""; position: absolute; left: 6px; top: 8px; bottom: 10px; width: 1px; background: var(--line); }
+  .trail li { position: relative; padding: 0 0 26px 30px; opacity: .46; transition: opacity .45s ease; }
+  .trail li.on { opacity: 1; }
+  .trail li:last-child { padding-bottom: 4px; }
+  .trail .dot { position: absolute; left: 0; top: 5px; width: 13px; height: 13px; border-radius: 50%;
+                background: var(--surface); border: 1.5px solid var(--line); }
+  .trail li.on .dot { background: var(--accent); border-color: var(--accent); }
+  .trail .t { font-size: 13px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .trail .l { font-size: 16.5px; margin-top: 1px; letter-spacing: -.005em; }
+  .trail li.on .l { font-weight: 600; }
+  .trail .n { font-size: 14.5px; color: var(--ink-2); margin-top: 3px; }
+
+  /* the single result — this replaces every KPI card */
+  .result { margin-top: 30px; padding-top: 26px; border-top: 1px solid var(--line);
+            opacity: 0; transform: translateY(6px); transition: opacity .5s ease, transform .5s ease; }
+  .result.on { opacity: 1; transform: none; }
+  .result .big { font-size: 30px; font-weight: 650; letter-spacing: -.018em; line-height: 1.25; }
+  .result .small { margin-top: 10px; font-size: 16px; color: var(--ink-2); max-width: 46ch; }
+  .aside { margin-top: 22px; font-size: 15.5px; color: var(--ink-2); max-width: 62ch;
+           opacity: 0; transition: opacity .5s ease; }
+  .aside.on { opacity: 1; }
+  .aside b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- offer ---------- */
+  .offer { margin-top: 34px; background: var(--surface); border: 1px solid var(--line);
+           border-radius: var(--radius); padding: 34px 34px 30px; display: none; }
+  .offer.on { display: block; animation: rise .4s ease; }
+  .offer h2 { font-size: 26px; font-weight: 650; letter-spacing: -.018em; max-width: 26ch; }
+  .offer .p { margin-top: 12px; font-size: 17px; color: var(--ink-2); max-width: 62ch; }
+  .price { display: flex; gap: 40px; flex-wrap: wrap; margin: 28px 0 24px; }
+  .price .it .k { font-size: 14px; color: var(--ink-3); }
+  .price .it .v { font-size: 25px; font-weight: 650; letter-spacing: -.015em; margin-top: 2px; }
+  .price .it .d { font-size: 14px; color: var(--ink-2); margin-top: 3px; max-width: 26ch; }
+  .promise { border-left: 2px solid var(--accent); padding: 3px 0 3px 16px; font-size: 16px;
+             color: var(--ink-2); max-width: 64ch; margin-bottom: 28px; }
+  .promise b { color: var(--ink); font-weight: 600; }
+  .cta { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .cta a.go { background: var(--accent); color: #fff; text-decoration: none; font-size: 16px; font-weight: 600;
+              padding: 0 26px; height: 52px; line-height: 52px; border-radius: 10px; display: inline-block; }
+  .cta a.go:hover { background: #1449bd; }
+  .cta a.tel { color: var(--ink); text-decoration: none; font-size: 16px; font-weight: 600; }
+  .cta .sig { font-size: 14.5px; color: var(--ink-3); }
+
+  footer { margin-top: 26px; font-size: 13.5px; color: var(--ink-3); line-height: 1.6; max-width: 76ch; }
+
+  @media (max-width: 860px) {
+    body { padding: 34px 18px 56px; font-size: 16px; }
+    h1 { font-size: 29px; max-width: none; }
+    .lede { font-size: 17px; }
+    .actions { gap: 12px; margin: 24px 0 28px; }
+    .btn { width: 100%; }
+    .linkbtn { width: 100%; text-align: center; }
+    .stage { grid-template-columns: 1fr; }
+    .stage .left { border-right: 0; border-bottom: 1px solid var(--line-2); padding: 24px 20px;
+                   align-items: flex-start; }
+    .stage .right { padding: 26px 20px 24px; }
+    .phone { width: 100%; max-width: 300px; }
+    .thread { max-height: 320px; }
+    .result .big { font-size: 24px; }
+    .offer { padding: 26px 20px 24px; }
+    .offer h2 { font-size: 22px; }
+    .price { gap: 24px; }
+    .cta a.go { width: 100%; text-align: center; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow" id="eyebrow"></div>
+  <h1 id="hook"></h1>
+  <p class="lede" id="lede"></p>
+
+  <div class="actions">
+    <button class="btn" id="playBtn" onclick="onPlay()">Watch it happen</button>
+    <button class="linkbtn" id="stepBtn" onclick="nextStep()">Or step through it yourself &rarr;</button>
+  </div>
+
+  <div class="stage">
+    <div class="left">
+      <div class="phone">
+        <div class="phone-top">
+          <div class="who" id="phoneWho"></div>
+          <div class="sub" id="phoneSub"></div>
+        </div>
+        <div class="thread" id="thread"><div class="when">Tonight 8:47 PM</div></div>
+        <div class="sheet" id="sheet">
+          <div class="h" id="sheetH"></div>
+          <div class="slots" id="slots"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right">
+      <h2>On your end</h2>
+      <ul class="trail" id="trail"></ul>
+      <div class="result" id="result">
+        <div class="big" id="resultBig"></div>
+        <div class="small" id="resultSmall"></div>
+      </div>
+      <div class="aside" id="aside"></div>
+    </div>
+  </div>
+
+  <div class="offer" id="offer">
+    <h2 id="offerH"></h2>
+    <p class="p" id="offerP"></p>
+    <div class="price" id="price"></div>
+    <div class="promise" id="promise"></div>
+    <div class="cta" id="cta"></div>
+  </div>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+/* ============================================================================
+   CONFIG — everything a human would want to change lives here.
+   Nothing below this block needs editing to re-price, re-word, or re-brand.
+
+   Per-prospect link (no file editing needed), e.g.
+     index.html?co=Guidry%20Roofing&city=Gonzales&trade=roofing&owner=Ray
+   Params: co, city, trade (roofing|hvac|plumbing), owner, phone, price, mo
+   ========================================================================== */
+var CONFIG = {
+  seller: { name: 'Matt Umali', email: 'matt.umali579@gmail.com', phone: '', area: 'Denham Springs' },
+  offer: {
+    build: '$1,500', monthly: '$400/mo',
+    buildDesc: 'One time. Built on the phone number and calendar you already use. You own it.',
+    monthDesc: 'Optional. I host it, watch it, and send you one page a month showing what it caught.',
+    guarantee: 'If it is not texting back your missed calls and booking jobs within 30 days of go-live, ' +
+               'I keep working free until it does &mdash; or you get your money back.'
+  },
+  demoBusiness: { company: 'Bayou Roofing Co.', city: 'Baton Rouge', owner: '', phone: '(225) 555-0119' },
+  trade: 'roofing'
+};
+
+/* Trade packs — swapping `trade` re-words the whole story, no other edits. */
+var TRADES = {
+  roofing: {
+    hook: 'A tree limb goes through a roof at 8:47 PM.',
+    visit: 'roof inspection', sheetH: 'Pick a time for your free roof inspection',
+    ask: 'Are you calling about storm damage, a leak, or an estimate?',
+    inbound: "A tree limb just went through my garage roof. Water's coming in. Can somebody come look at it?",
+    triage: "That's urgent — I'm flagging it as storm damage for the crew.",
+    tap: 'Book my free inspection',
+    care: "If the water's actively coming in, tarp what you can and stay off the roof — we'll handle it.",
+    kind: 'storm damage', jobValue: 8200, jobName: 're-roof',
+    quoteAmt: '$9,800', quoteWho: 'Sarah'
+  },
+  hvac: {
+    hook: 'Their AC dies at 8:47 PM with a baby in the house.',
+    visit: 'service call', sheetH: 'Pick a time for your service call',
+    ask: 'Are you calling about a no-cool, a no-heat, or a new system quote?',
+    inbound: "Our AC quit tonight and the house is already 84 degrees with a baby in it. How soon can somebody come out?",
+    triage: "That's a no-cool with a child in the house — I'm flagging it as priority for the crew.",
+    tap: 'Book my service call',
+    care: "Close the blinds on the sun side and leave the fan on AUTO, not ON, until we get there.",
+    kind: 'no-cool priority', jobValue: 6400, jobName: 'system replacement',
+    quoteAmt: '$7,400', quoteWho: 'Sarah'
+  },
+  plumbing: {
+    hook: 'A water heater bursts at 8:47 PM.',
+    visit: 'service call', sheetH: 'Pick a time for your service call',
+    ask: 'Are you calling about a leak, a water heater, or an estimate?',
+    inbound: "Water heater burst and it's running across the garage floor. Can somebody get out here?",
+    triage: "That's an active leak — I'm flagging it as an emergency for the crew.",
+    tap: 'Book my service call',
+    care: "Shut the valve on top of the heater if you can reach it safely — that stops the flow until we get there.",
+    kind: 'burst heater', jobValue: 2400, jobName: 'water heater job',
+    quoteAmt: '$3,900', quoteWho: 'Sarah'
+  }
+};
+
+/* ---- per-prospect link --------------------------------------------------- */
+var Q = new URLSearchParams(location.search);
+function q(k, d) { var v = Q.get(k); return (v && v.trim()) ? v.trim() : d; }
+var TRADE_KEY = (q('trade', CONFIG.trade) || 'roofing').toLowerCase();
+if (!TRADES[TRADE_KEY]) { TRADE_KEY = 'roofing'; }
+var T = TRADES[TRADE_KEY];
+var CO      = q('co', CONFIG.demoBusiness.company);
+var OWNER   = q('owner', CONFIG.demoBusiness.owner);
+var THEIR   = q('phone', CONFIG.demoBusiness.phone);
+var PRICE   = q('price', CONFIG.offer.build);
+var MONTHLY = q('mo', CONFIG.offer.monthly);
+var NAMED   = !!Q.get('co');
+
+function $(id) { return document.getElementById(id); }
+function money(n) { return '$' + n.toLocaleString('en-US'); }
+
+/* ---- the four beats ------------------------------------------------------ */
+var BEATS = [
+  { t: '8:47 PM', l: 'Call missed',   n: 'Rang 25 seconds, office closed. Normally this is where it ends.' },
+  { t: '8:47 PM', l: 'Texted back',   n: 'Nine seconds after they hung up. Not a voicemail — a conversation.' },
+  { t: '8:49 PM', l: 'They answered', n: 'They say what happened. It knows this one is urgent.' },
+  { t: '8:51 PM', l: 'Booked',        n: 'They pick the time themselves.' }
+];
+
+function paint() {
+  document.title = CO + ' — AI Office Agent Demo';
+  $('eyebrow').innerHTML = '<b>' + CO + '</b> &nbsp;·&nbsp; after-hours line &nbsp;·&nbsp; demo';
+  $('hook').textContent = T.hook;
+  $('lede').innerHTML = 'Your office is closed and nobody picks up. Here is what happens on that same ' +
+                        'phone line once the agent is on it &mdash; <b>with no one there to answer.</b>';
+  $('phoneWho').textContent = CO;
+  $('phoneSub').textContent = THEIR;
+  $('sheetH').textContent = T.sheetH;
+  $('trail').innerHTML = BEATS.map(function (b, i) {
+    return '<li id="beat' + i + '"><span class="dot"></span>' +
+           '<div class="t">' + b.t + '</div><div class="l">' + b.l + '</div>' +
+           '<div class="n">' + b.n + '</div></li>';
+  }).join('');
+  $('foot').innerHTML =
+    'Simulated phone events on a sample business. The real build runs on ' +
+    (NAMED ? CO + "'s" : "the business's") + ' own number and calendar. ' +
+    CONFIG.seller.name + ', ' + CONFIG.seller.area + '.';
+  paintOffer();
+}
+
+function paintOffer() {
+  $('offerH').textContent = 'That job was going to whoever answered first.';
+  $('offerP').innerHTML =
+    'The calls are already coming in, and ' + (NAMED ? 'you are' : 'the business is') +
+    ' already paying to get them. This makes sure none of them go unanswered again — ' +
+    'nights, weekends, and the hours you are on a job.';
+  $('price').innerHTML =
+    '<div class="it"><div class="k">The build</div><div class="v">' + PRICE + '</div>' +
+      '<div class="d">' + CONFIG.offer.buildDesc + '</div></div>' +
+    '<div class="it"><div class="k">If you want it maintained</div><div class="v">' + MONTHLY + '</div>' +
+      '<div class="d">' + CONFIG.offer.monthDesc + '</div></div>';
+  $('promise').innerHTML = '<b>My promise.</b> ' + CONFIG.offer.guarantee;
+
+  var subj = encodeURIComponent('Missed-call agent for ' + CO);
+  var body = encodeURIComponent('Hi ' + CONFIG.seller.name.split(' ')[0] +
+    ",\n\nI watched the demo. Let's talk about putting this on our line.\n\nCompany: " + CO +
+    '\nBest number to reach me:\nBest time to call:\n\nThanks,\n' + (OWNER || ''));
+  var h = '<a class="go" href="mailto:' + CONFIG.seller.email + '?subject=' + subj + '&body=' + body +
+          '">Put this on my line</a>';
+  if (CONFIG.seller.phone) {
+    h += '<a class="tel" href="tel:' + CONFIG.seller.phone.replace(/[^0-9+]/g, '') +
+         '">or call ' + CONFIG.seller.phone + '</a>';
+  }
+  h += '<span class="sig">' + CONFIG.seller.name + ' &nbsp;·&nbsp; ' + CONFIG.seller.area +
+       ' &nbsp;·&nbsp; ' + CONFIG.seller.email + '</span>';
+  $('cta').innerHTML = h;
+}
+
+/* ---- engine -------------------------------------------------------------- */
+var step = 0, booked = false, playing = false, timer = null;
+var thread = $('thread');
+
+function msg(who, html) {
+  var m = document.createElement('div');
+  m.className = 'msg ' + who;
+  m.innerHTML = html;
+  thread.appendChild(m);
+  thread.scrollTop = thread.scrollHeight;
+}
+function typing(ms, then) {
+  var d = document.createElement('div');
+  d.className = 'dots';
+  d.innerHTML = '<i></i><i></i><i></i>';
+  thread.appendChild(d);
+  thread.scrollTop = thread.scrollHeight;
+  setTimeout(function () { if (d.parentNode) { d.parentNode.removeChild(d); } then(); }, ms);
+}
+function lightBeat(i) { var el = $('beat' + i); if (el) { el.classList.add('on'); } }
+
+var STEP_LABELS = [
+  'Or step through it yourself →',
+  'Next: the agent texts back →',
+  'Next: they answer →',
+  'Next: it offers a real time →',
+  'Next: they book it themselves →',
+  'See what that was worth →',
+  'That is the whole thing.'
+];
+function syncBtn() {
+  $('stepBtn').innerHTML = STEP_LABELS[Math.min(step, STEP_LABELS.length - 1)];
+  $('stepBtn').disabled = (step >= 6);
+}
+
+function nextStep() {
+  if (step >= 6) { return; }
+  step++;
+  switch (step) {
+    case 1:
+      lightBeat(0);
+      break;
+    case 2:
+      lightBeat(1);
+      typing(750, function () {
+        msg('agent', 'Hi, this is the assistant for ' + CO + ' — sorry we missed your call! ' +
+                     T.ask + " Text back and I'll get you taken care of right now.");
+      });
+      break;
+    case 3:
+      lightBeat(2);
+      msg('them', T.inbound);
+      break;
+    case 4:
+      typing(750, function () {
+        msg('agent', T.triage + " I can get somebody out as early as tomorrow. Pick a time and you're " +
+                     "on the calendar:<span class='tap' onclick='openSheet()'>" + T.tap + "</span>");
+      });
+      break;
+    case 5:
+      if (!booked) { openSheet(); }
+      break;
+    case 6:
+      showAside();
+      showOffer();
+      break;
+  }
+  syncBtn();
+}
+
+function openSheet() {
+  if (booked) { return; }
+  if (step < 4) { step = 4; syncBtn(); }
+  var slots = ['Tue 9:00 AM', 'Tue 2:30 PM', 'Wed 8:30 AM', 'Wed 1:00 PM'];
+  var el = $('slots');
+  el.innerHTML = '';
+  slots.forEach(function (s) {
+    var b = document.createElement('button');
+    b.className = 'slot';
+    b.type = 'button';
+    b.textContent = s;
+    b.onclick = function () { pick(b, s); };
+    el.appendChild(b);
+  });
+  $('sheet').classList.add('on');
+}
+
+function pick(el, s) {
+  if (booked) { return; }
+  booked = true;
+  el.classList.add('taken');
+  setTimeout(function () {
+    $('sheet').classList.remove('on');
+    msg('agent', "You're booked: <b>" + s + ", free " + T.visit + ".</b> I've sent a confirmation and " +
+                 "the tech's name. " + T.care);
+    lightBeat(3);
+    $('beat3').querySelector('.n').textContent =
+      s + ' — ' + T.kind + ', picked by the customer. Nobody on your team touched it.';
+    showResult(s);
+    if (step < 5) { step = 5; }
+    syncBtn();
+  }, 620);
+}
+
+function showResult(slot) {
+  $('resultBig').textContent = 'Four minutes. One ' + T.jobName + ' saved.';
+  $('resultSmall').textContent =
+    (/^[18]/.test(String(T.jobValue)) ? 'An ' : 'A ') + money(T.jobValue) + ' job is on ' + (NAMED ? 'your' : 'the') + ' calendar for ' + slot +
+    ', booked at 8:51 PM — on a night the office was closed and the phone went unanswered.';
+  $('result').classList.add('on');
+}
+
+function showAside() {
+  $('aside').innerHTML =
+    '<b>It also chases the quotes that go quiet.</b> The ' + T.quoteAmt + ' estimate ' + T.quoteWho +
+    ' never answered on Friday got followed up Saturday morning, without anyone remembering to do it.';
+  $('aside').classList.add('on');
+}
+
+function showOffer() {
+  var o = $('offer');
+  o.classList.add('on');
+  setTimeout(function () { o.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 380);
+}
+
+/* ---- auto-play: nobody should have to click six times --------------------- */
+var GAPS = [900, 2500, 2300, 2500, 2300, 3000];
+function onPlay() {
+  if (step >= 6) { location.href = location.pathname + location.search; return; }
+  if (playing) { pause(); } else { play(); }
+}
+function play() { playing = true; $('playBtn').textContent = 'Pause'; queue(); }
+function pause() { playing = false; clearTimeout(timer); $('playBtn').textContent = 'Keep going'; }
+function queue() {
+  if (!playing || step >= 6) { finish(); return; }
+  timer = setTimeout(function () {
+    if (!playing) { return; }
+    nextStep();
+    if (step === 5 && !booked) {
+      setTimeout(function () {
+        var f = document.querySelector('.slot');
+        if (f && !booked) { pick(f, f.textContent); }
+        queue();
+      }, 1300);
+      return;
+    }
+    queue();
+  }, GAPS[Math.min(step, GAPS.length - 1)]);
+}
+function finish() {
+  playing = false;
+  clearTimeout(timer);
+  $('playBtn').textContent = (step >= 6) ? 'Watch it again' : 'Watch it happen';
+}
+
+paint();
+syncBtn();
+</script>
+</body>
+</html>
