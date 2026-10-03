@@ -3,24 +3,48 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BrightReach · Missed-call text-back</title>
+<meta name="description" content="Missed-Call Rescue from BrightReach Media. $0 today. If the dashboard does not show at least 5 missed callers brought back in 30 days, you owe nothing.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'self'; object-src 'none'">
+<title>Missed-Call Rescue: 5 Leads or It's Free · BrightReach Media</title>
 <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
 <header class="top">
   <p class="brand">BrightReach Media</p>
-  <p class="price">$1,500 once · the shop owns it · 30 days, it works or the money comes back</p>
+  <p class="price">Missed-Call Rescue · $0 to start · 5 missed callers back in 30 days, or you pay nothing</p>
 </header>
 
 <main>
   <section class="hero">
-    <h1>They called while you were on the roof. They still got an answer.</h1>
-    <p class="lede">An unanswered call turns into a text from the business, three short questions, and a note on the owner’s phone. Estimates get followed up the same day, two days later, and five days later, until the customer replies, you mark the job won or lost, or they text STOP.</p>
+    <p class="offer-name">Missed-Call Rescue: 5 Leads or It's Free</p>
+    <h1 id="headline">Your shop: 30-day Missed-Call Rescue for heating and air shops. 5 missed callers brought back, or you pay nothing.</h1>
+    <p class="lede" id="lede">You were on a job. Your caller still got an answer. Every missed call gets a text from Northline Heating &amp; Air within seconds. It asks what they need, and the lead lands on your phone. Quiet estimates get three follow-ups.</p>
+    <p class="sample" id="sample-note">Sample shop on this page. Northline Heating &amp; Air is not a real company.</p>
   </section>
 
-  <section class="stage" aria-label="Sales simulation">
+  <section class="guarantee" aria-label="Guarantee">
+    <h2>5 leads or it's free.</h2>
+    <p>$0 today. If your dashboard doesn't show at least 5 missed callers brought back in the first 30 days live, you owe nothing, and I keep it running until it does.</p>
+    <ul>
+      <li>Then $497 once + $49/mo, first 2 months free</li>
+      <li>No contract</li>
+      <li>You own the number</li>
+      <li id="slots-line">3 heating and air shops per area</li>
+    </ul>
+    <p class="deadline">Founding price ends Fri Oct 16, 2026.</p>
+  </section>
+
+  <section class="next-step" aria-label="Next step">
+    <a class="button cta-link" data-cta data-cta-label href="mailto:matt@fitnesshubb.com?subject=YES%20-%20Missed-Call%20Rescue%20for%20my%20shop&amp;body=Hi%20Matt%2C%0A%0AYes.%20I%20want%20Missed-Call%20Rescue%20for%20my%20shop.%0A%0ABest%20number%20to%20reach%20me%3A%0A%0AThanks">Yes - Missed-Call Rescue for my shop</a>
+    <p class="scarcity">I set up 3 heating and air shops per area, so you're not competing with the shop down the road.</p>
+    <p class="mail-line"><a data-cta href="mailto:matt@fitnesshubb.com?subject=YES%20-%20Missed-Call%20Rescue%20for%20my%20shop&amp;body=Hi%20Matt%2C%0A%0AYes.%20I%20want%20Missed-Call%20Rescue%20for%20my%20shop.%0A%0ABest%20number%20to%20reach%20me%3A%0A%0AThanks">matt@fitnesshubb.com</a></p>
+  </section>
+
+  <p class="try" id="try-line">Try it. Miss the call, then answer the three questions.</p>
+
+  <section class="stage" aria-label="Missed-call simulation">
     <article class="device customer">
-      <p class="device-label">Caller’s phone</p>
+      <p class="device-label">Caller's phone</p>
       <div class="phone" id="customer-phone">
         <div class="statusbar"><span>9:41</span><span>LTE</span></div>
         <div id="call-screen" class="call-screen">
@@ -39,14 +63,14 @@
     </article>
 
     <article class="device owner">
-      <p class="device-label">Owner’s phone</p>
+      <p class="device-label">Owner's phone</p>
       <div class="phone owner-phone">
         <div class="statusbar"><span>9:41</span><span>Dana</span></div>
         <div class="lock">
           <p class="lock-time">2:14</p>
-          <p class="lock-date">On a job · Milwaukee</p>
+          <p class="lock-date" id="lock-place">On a job</p>
           <div id="owner-feed" class="owner-feed">
-            <p class="empty-note">Nothing yet. Miss the call on the left.</p>
+            <p class="empty-note">Nothing yet. Miss the call.</p>
           </div>
         </div>
       </div>
@@ -66,26 +90,73 @@
     </aside>
   </section>
 
+  <section class="how" aria-label="How it works">
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li>
+        <span class="num">1</span>
+        <h3>A missed call gets a text</h3>
+        <p id="step-1-copy">When you don't pick up, the caller gets a text from Northline Heating &amp; Air within seconds. It asks what they need, their ZIP, and how soon.</p>
+      </li>
+      <li>
+        <span class="num">2</span>
+        <h3>The lead lands on your phone</h3>
+        <p>You get the answers on your phone, with a booking link. You reply from the phone you already use.</p>
+      </li>
+      <li>
+        <span class="num">3</span>
+        <h3>Quiet estimates get three follow-ups</h3>
+        <p>Same day, 2 days later, and 5 days later. A reply, a won or lost mark, or STOP ends it.</p>
+      </li>
+    </ol>
+  </section>
+
+  <section class="leak" aria-label="Missed-call math">
+    <h2>Leads you already paid for</h2>
+    <p class="leak-row">
+      <label for="missed-count">Missed calls last week</label>
+      <input id="missed-count" type="number" min="0" max="500" value="5" inputmode="numeric">
+    </p>
+    <p id="leak-result"></p>
+    <p class="fine">Plumbing about $129, A/C about $128, roofing about $228. LocaliQ 2025, via skygnosis.com.</p>
+  </section>
+
   <section class="followups hidden" id="followups">
     <h2>Estimate follow-up</h2>
-    <p>Same copy the scheduler sends: same day, two days later at 10:00 local, five days later at 10:00 local. A reply, a won/lost mark, or STOP ends it.</p>
+    <p>Same texts your customers get: same day, 2 days later, 5 days later. A reply, a won/lost mark, or STOP ends it.</p>
     <ol id="followup-list"></ol>
   </section>
 
   <section class="proof">
-    <h2>What the 30-day board counts</h2>
+    <h2>What your dashboard counts</h2>
     <div class="stats" id="stats"></div>
-    <p>On a real install this is a private page for that shop only. Two shops on one deployment cannot see each other’s calls.</p>
+    <p>On a real install this is a private page for your shop only.</p>
+    <p>A weekly recovered-revenue text, and a review request after a job is marked won, are rolling out. Texts include a booking link. They do not place the job on a calendar.</p>
   </section>
 
-  <section class="next-step" aria-label="Next step">
-    <p>Want this for your business? Reply to Matt's email</p>
-    <a href="mailto:matt@fitnesshubb.com?subject=Missed-call%20text-back">matt@fitnesshubb.com</a>
+  <section class="faq" aria-label="Questions">
+    <h2>Questions</h2>
+    <dl>
+      <dt>Is there a contract?</dt>
+      <dd>No. Cancel anytime. You pay nothing until your own dashboard shows the leads.</dd>
+      <dt>How much setup work is it?</dt>
+      <dd>I do the setup, including the carrier registration. Your customers keep calling the number they already have. The 30 days start when it goes live, not when you say yes. While registration is pending, you still get a missed-call count, saved replies on your phone, and a short text for old estimates that you send yourself.</dd>
+      <dt>What if it doesn't work?</dt>
+      <dd>You owe nothing. If the dashboard doesn't show at least 5 missed callers brought back in the first 30 days live, I keep it running free until it does, or I remove it, whichever you want. Brought back means the missed caller replied to the text. That 5 is for shops with 20 or more unanswered calls a month. If a free check shows fewer, the target is 3. Under 10, I'll tell you it may not be worth it yet. Your part is small: leave forwarding on when you don't pick up, and don't turn the texts off.</dd>
+      <dt>Do I keep my number?</dt>
+      <dd>Yes. The number stays yours. If you cancel, you keep the number and the estimate texts.</dd>
+    </dl>
+  </section>
+
+  <section class="next-step bottom-cta" aria-label="Say yes">
+    <a class="button cta-link" data-cta data-cta-label href="mailto:matt@fitnesshubb.com?subject=YES%20-%20Missed-Call%20Rescue%20for%20my%20shop&amp;body=Hi%20Matt%2C%0A%0AYes.%20I%20want%20Missed-Call%20Rescue%20for%20my%20shop.%0A%0ABest%20number%20to%20reach%20me%3A%0A%0AThanks">Yes - Missed-Call Rescue for my shop</a>
+    <p class="scarcity">I set up 3 heating and air shops per area, so you're not competing with the shop down the road.</p>
+    <p class="sign">Matt Umali · BrightReach Media</p>
   </section>
 </main>
 
 <footer>
-  <p id="page-foot">Simulation in the browser. No Twilio account, no text sent, no charge. Northline Heating &amp; Air is not a real company.</p>
+  <p id="page-foot">This is a simulation. Nothing is sent and nothing is charged. Northline Heating &amp; Air is not a real company.</p>
 </footer>
 <script src="./engine.js"></script>
 <script src="./demo.js"></script>
