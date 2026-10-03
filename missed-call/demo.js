@@ -20,6 +20,18 @@
     roofing: { need: 'Water is coming through the ceiling', job: 'roof leak repair', amount: '3200' },
   };
 
+  const TRADE_INFO = {
+    plumber: { plural: 'plumbers', scene: 'You were on a job.', cost: 129, costName: 'plumbing' },
+    plumbing: { plural: 'plumbers', scene: 'You were on a job.', cost: 129, costName: 'plumbing' },
+    hvac: { plural: 'heating and air shops', scene: 'You were on a job.', cost: 128, costName: 'A/C' },
+    heating: { plural: 'heating and air shops', scene: 'You were on a job.', cost: 128, costName: 'A/C' },
+    air: { plural: 'heating and air shops', scene: 'You were on a job.', cost: 128, costName: 'A/C' },
+    electrician: { plural: 'electricians', scene: 'You were on a job.', cost: null, costName: '' },
+    electrical: { plural: 'electricians', scene: 'You were on a job.', cost: null, costName: '' },
+    roofer: { plural: 'roofers', scene: 'You were on the roof.', cost: 228, costName: 'roofing' },
+    roofing: { plural: 'roofers', scene: 'You were on the roof.', cost: 228, costName: 'roofing' },
+  };
+
   const DEFAULT_BUSINESS = 'Northline Heating & Air';
   const DEFAULT_SCRIPT = TRADE_SCRIPTS.hvac;
   const biz = cleanParam('biz', 80);
@@ -41,9 +53,12 @@
     return { need: 'Need a ' + label + ' to come out', job: label + ' job', amount: '1500' };
   }
 
+  const city = cleanParam('city', 60);
   const businessName = biz || DEFAULT_BUSINESS;
+  const displayTrade = tradeKey || inferTrade(biz) || (biz ? '' : 'hvac');
   const script = scriptFor(tradeKey || inferTrade(biz));
   const amountCents = Number(script.amount) * 100;
+  const samplePlace = city || 'Downtown';
   const customerName = 'Pat Keller';
   const shortName = businessName.split(' ')[0] || 'Shop';
 
@@ -55,7 +70,7 @@
   }
   const tenant = engine.exampleTenant(tenantOverrides);
 
-  const caller = '+14145550123';
+  const caller = '+15555550123';
   const daytime = '2026-10-03T15:00:00.000Z';
   let state = engine.freshState();
   let started = false;
@@ -75,17 +90,92 @@
     return engine.formatMoney(cents).replace(/\.00$/, '');
   }
 
+  function infoFor(key) {
+    if (TRADE_INFO[key]) return TRADE_INFO[key];
+    if (!key) return { plural: 'shops in one trade', scene: 'You were on a job.', cost: null, costName: '' };
+    const label = key.replace(/[-]+/g, ' ');
+    return {
+      plural: /s$/i.test(label) ? label : label + 's',
+      scene: 'You were on a job.',
+      cost: null,
+      costName: '',
+    };
+  }
+
+  function scarcityLine(info, known) {
+    const who = known ? info.plural : 'shops per trade';
+    return "I set up 3 " + who + " per area, so you're not competing with the shop down the road.";
+  }
+
+  function buildMailto(mailBiz) {
+    const subject = 'YES - Missed-Call Rescue for ' + mailBiz;
+    const lines = [
+      'Hi Matt,',
+      '',
+      'Yes. I want Missed-Call Rescue for ' + mailBiz + '.',
+      '',
+    ];
+    const tradeLine = tradeKey || inferTrade(biz);
+    if (tradeLine) lines.push('Trade: ' + tradeLine);
+    if (city) lines.push('City: ' + city);
+    if (tradeLine || city) lines.push('');
+    lines.push('Best number to reach me:', '', 'Thanks');
+    return 'mailto:matt@fitnesshubb.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
+  }
+
+  function paintLeak() {
+    const input = document.getElementById('missed-count');
+    const out = document.getElementById('leak-result');
+    if (!input || !out) return;
+    let count = parseInt(input.value, 10);
+    if (!isFinite(count) || count < 0) count = 0;
+    if (count > 500) count = 500;
+    const info = infoFor(displayTrade);
+    if (!info.cost) {
+      out.textContent = count + ' missed call' + (count === 1 ? '' : 's') + ' last week. Published lead costs I use are plumbing about $129, A/C about $128, and roofing about $228 (LocaliQ 2025). I will not invent a figure for this trade.';
+      return;
+    }
+    const total = count * info.cost;
+    const dollars = '$' + String(total).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    out.textContent = count + ' missed call' + (count === 1 ? '' : 's') + ' × about $' + info.cost + ' (' + info.costName + ') = ' + dollars + ' in leads you already paid for.';
+  }
+
   function applyNames() {
+    const info = infoFor(displayTrade);
+    const knownTrade = Boolean(displayTrade);
+    const headlineWho = biz ? businessName : 'Your shop';
+    const mailBiz = biz || 'my shop';
     document.getElementById('call-name').textContent = businessName;
     document.getElementById('ticket-name').textContent = businessName;
-    if (!biz) return;
-    document.title = businessName + ' · Missed-call text-back';
-    const lede = document.querySelector('.lede');
-    if (lede) {
-      lede.textContent = 'An unanswered call turns into a text from ' + businessName + ', three short questions, and a note on the owner’s phone. Estimates get followed up the same day, two days later, and five days later, until the customer replies, you mark the job won or lost, or they text STOP.';
-    }
-    document.getElementById('page-foot').textContent = 'Simulation in the browser. No Twilio account, no text sent, no charge. ' + businessName + ' is filled in from this link. This page sends nothing.';
-    document.getElementById('ticket-foot').textContent = 'Sample for this link. This page sends nothing.';
+    document.getElementById('headline').textContent = headlineWho + ': 30-day Missed-Call Rescue for ' + info.plural + '. 5 missed callers brought back, or you pay nothing.';
+    document.getElementById('lede').textContent = info.scene + ' Your caller still got an answer. Every missed call gets a text from ' + businessName + ' within seconds. It asks what they need, and the lead lands on your phone. Quiet estimates get three follow-ups.';
+    document.getElementById('step-1-copy').textContent = "When you don't pick up, the caller gets a text from " + businessName + ' within seconds. It asks what they need, their ZIP, and how soon.';
+    document.getElementById('lock-place').textContent = city ? 'On a job · ' + city : 'On a job';
+    document.getElementById('slots-line').textContent = knownTrade ? '3 ' + info.plural + ' per area' : '3 shops per trade per area';
+    document.getElementById('try-line').textContent = biz
+      ? 'Try it as ' + businessName + '. Miss the call, then answer the three questions.'
+      : 'Try it. Miss the call, then answer the three questions.';
+    document.querySelectorAll('.scarcity').forEach(function (node) {
+      node.textContent = scarcityLine(info, knownTrade);
+    });
+    const sample = document.getElementById('sample-note');
+    if (biz) sample.classList.add('hidden');
+    else sample.classList.remove('hidden');
+    document.title = (biz ? businessName + ' · ' : '') + "Missed-Call Rescue: 5 Leads or It's Free · BrightReach Media";
+    document.getElementById('page-foot').textContent = biz
+      ? 'This is a simulation. Nothing is sent and nothing is charged. ' + businessName + ' is filled in from this link.'
+      : 'This is a simulation. Nothing is sent and nothing is charged. ' + businessName + ' is not a real company.';
+    document.getElementById('ticket-foot').textContent = biz
+      ? 'Sample for this link. This page sends nothing.'
+      : 'Fictional shop. This page sends nothing.';
+    const href = buildMailto(mailBiz);
+    document.querySelectorAll('[data-cta]').forEach(function (link) {
+      link.href = href;
+    });
+    document.querySelectorAll('[data-cta-label]').forEach(function (link) {
+      link.textContent = 'Yes - Missed-Call Rescue for ' + mailBiz;
+    });
+    paintLeak();
   }
 
   function showThread() {
@@ -168,7 +258,7 @@
     if (!conversation || conversation.state === 'awaiting_need') {
       chip(script.need, function () { incoming(script.need); });
     } else if (conversation.state === 'awaiting_location') {
-      chip('53211', function () { incoming('53211'); });
+      chip(samplePlace, function () { incoming(samplePlace); });
     } else if (conversation.state === 'awaiting_urgency') {
       chip('Today', function () { incoming('today please'); });
     } else if (conversation.state === 'handed_off') {
@@ -257,6 +347,7 @@
     paintChips();
   }
 
+  document.getElementById('missed-count').addEventListener('input', paintLeak);
   document.getElementById('miss-call').addEventListener('click', missCall);
   composer.addEventListener('submit', function (event) {
     event.preventDefault();
